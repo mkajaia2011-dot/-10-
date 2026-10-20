@@ -1,0 +1,1298 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ვირტუალური ქიმიური ლაბორატორია — მარილების მიღების 10 ხერხი</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --panel-bg: #1e293b;
+            --border-color: #334155;
+            --primary: #38bdf8;
+            --primary-hover: #0284c7;
+            --accent-green: #10b981;
+            --accent-purple: #a855f7;
+            --accent-amber: #f59e0b;
+            --text-light: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans Georgian', 'Segoe UI', Tahoma, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        header {
+            background: #0b1120;
+            padding: 16px 28px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        header h1 {
+            font-size: 1.35rem;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 700;
+        }
+
+        header h1 i {
+            color: var(--primary);
+        }
+
+        .header-badge {
+            font-size: 0.88rem;
+            color: var(--text-muted);
+            background: rgba(56, 189, 248, 0.1);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            padding: 6px 14px;
+            border-radius: 20px;
+        }
+
+        .main-layout {
+            display: grid;
+            grid-template-columns: 320px 1fr 340px;
+            flex-grow: 1;
+            height: calc(100vh - 67px);
+            overflow: hidden;
+        }
+
+        @media (max-width: 1100px) {
+            .main-layout {
+                grid-template-columns: 280px 1fr 300px;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .main-layout {
+                display: flex;
+                flex-direction: column;
+                height: auto;
+                overflow: visible;
+            }
+        }
+
+        /* Left Panel: Reaction List */
+        .methods-sidebar {
+            background: #0b1120;
+            border-right: 1px solid var(--border-color);
+            padding: 16px;
+            overflow-y: auto;
+        }
+
+        .methods-sidebar h3 {
+            font-size: 0.88rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 14px;
+            padding-left: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .method-btn {
+            width: 100%;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-light);
+            padding: 11px 14px;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.9rem;
+        }
+
+        .method-btn:hover {
+            border-color: var(--primary);
+            background: #283548;
+            transform: translateX(3px);
+        }
+
+        .method-btn.active {
+            background: var(--primary);
+            color: #04101e;
+            font-weight: 700;
+            border-color: var(--primary);
+            box-shadow: 0 4px 14px rgba(56, 189, 248, 0.3);
+        }
+
+        .method-btn .num {
+            background: rgba(255, 255, 255, 0.12);
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 700;
+            flex-shrink: 0;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .method-btn.active .num {
+            background: #04101e;
+            color: #38bdf8;
+        }
+
+        /* Middle Panel: Interactive Virtual Canvas */
+        .simulation-area {
+            display: flex;
+            flex-direction: column;
+            background: #070b14;
+            padding: 20px;
+            position: relative;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+        }
+
+        .canvas-wrapper {
+            position: relative;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+            border: 1px solid var(--border-color);
+            background: #0d1527;
+        }
+
+        #labCanvas {
+            display: block;
+            background: radial-gradient(circle at 50% 40%, #152238 0%, #090e1a 100%);
+        }
+
+        .canvas-overlay-text {
+            position: absolute;
+            top: 14px;
+            left: 18px;
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(6px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.82rem;
+            color: var(--primary);
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .controls-bar {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+        }
+
+        .btn-mix {
+            background: var(--accent-green);
+            color: #052e16;
+        }
+
+        .btn-mix:hover {
+            background: #34d399;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 14px rgba(16, 185, 129, 0.35);
+        }
+
+        .btn-heat {
+            background: #f59e0b;
+            color: #451a03;
+        }
+
+        .btn-heat.heating-active {
+            background: #ef4444;
+            color: white;
+            animation: pulseHeat 1.2s infinite;
+        }
+
+        @keyframes pulseHeat {
+            0%, 100% { box-shadow: 0 0 15px rgba(239, 68, 68, 0.6); }
+            50% { box-shadow: 0 0 25px rgba(245, 158, 11, 0.8); }
+        }
+
+        .btn-heat:hover {
+            filter: brightness(1.1);
+            transform: translateY(-2px);
+        }
+
+        .btn-reset {
+            background: #334155;
+            color: #f1f5f9;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-reset:hover {
+            background: #475569;
+            transform: translateY(-2px);
+        }
+
+        /* Right Panel: Chemical Information & Details */
+        .details-panel {
+            background: var(--panel-bg);
+            border-left: 1px solid var(--border-color);
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .card {
+            background: #162032;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .card h4 {
+            color: var(--primary);
+            font-size: 0.95rem;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+        }
+
+        .method-name-header {
+            font-size: 1.15rem;
+            color: #fff;
+            font-weight: 700;
+            line-height: 1.4;
+            margin-bottom: 6px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 14px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            background: rgba(56, 189, 248, 0.18);
+            color: var(--primary);
+            border: 1px solid rgba(56, 189, 248, 0.35);
+        }
+
+        .equation-box {
+            background: #090d16;
+            padding: 14px;
+            border-radius: 8px;
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
+            font-size: 0.98rem;
+            color: #4ade80;
+            border: 1px solid #1e293b;
+            text-align: center;
+            margin: 8px 0;
+            word-break: break-word;
+            letter-spacing: 0.5px;
+            line-height: 1.4;
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.4);
+        }
+
+        .info-list {
+            list-style: none;
+            font-size: 0.88rem;
+            line-height: 1.7;
+            color: var(--text-muted);
+            padding-left: 0;
+        }
+
+        .info-list li {
+            position: relative;
+            padding-left: 20px;
+            margin-bottom: 4px;
+        }
+
+        .info-list li::before {
+            content: "•";
+            color: var(--primary);
+            position: absolute;
+            left: 5px;
+            font-size: 1.2rem;
+            line-height: 1;
+        }
+
+        .info-list li strong {
+            color: var(--text-light);
+        }
+
+        .observation-box {
+            font-size: 0.88rem;
+            color: #cbd5e1;
+            line-height: 1.6;
+            background: rgba(15, 23, 42, 0.5);
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 3px solid var(--accent-amber);
+        }
+
+        .toast-msg {
+            position: absolute;
+            bottom: 80px;
+            background: rgba(16, 185, 129, 0.95);
+            color: white;
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+            pointer-events: none;
+            z-index: 20;
+        }
+
+        .toast-msg.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1><i class="fa-solid fa-flask-vial"></i> ვირტუალური ქიმიური ლაბორატორია</h1>
+        <div class="header-badge">
+            <i class="fa-solid fa-graduation-cap"></i> თემა: <strong>მარილების მიღების 10 ძირითადი ხერხი</strong>
+        </div>
+    </header>
+
+    <div class="main-layout">
+        <!-- Sidebar Methods -->
+        <div class="methods-sidebar">
+            <h3><i class="fa-solid fa-list-ol"></i> მიღების ხერხები (10)</h3>
+            <div id="methodsList"></div>
+        </div>
+
+        <!-- Canvas Lab Simulation -->
+        <div class="simulation-area">
+            <div class="canvas-wrapper">
+                <canvas id="labCanvas" width="560" height="420"></canvas>
+                <div class="canvas-overlay-text" id="statusOverlay">
+                    <i class="fa-solid fa-vial"></i> <span>მზადაა რეაქციისთვის</span>
+                </div>
+                <div class="toast-msg" id="toastMsg">რეაქცია დაიწყო!</div>
+            </div>
+            
+            <div class="controls-bar">
+                <button class="btn btn-mix" onclick="startReaction()">
+                    <i class="fa-solid fa-blender"></i> რეაქციის დაწყება / შერევა
+                </button>
+                <button class="btn btn-heat" id="heatBtn" onclick="toggleHeat()">
+                    <i class="fa-solid fa-fire"></i> გაცხელება (სპირტქურა)
+                </button>
+                <button class="btn btn-reset" onclick="resetLab()">
+                    <i class="fa-solid fa-arrow-rotate-left"></i> გასუფთავება
+                </button>
+            </div>
+        </div>
+
+        <!-- Right Info Panel -->
+        <div class="details-panel">
+            <div class="card">
+                <div class="method-name-header" id="methodTitle">ხერხის დასახელება</div>
+                <div class="status-badge" id="reactionType">რეაქციის ტიპი</div>
+            </div>
+
+            <div class="card">
+                <h4><i class="fa-solid fa-atom"></i> ქიმიური რეაქციის ტოლობა</h4>
+                <div class="equation-box" id="chemicalEquation">...</div>
+            </div>
+
+            <div class="card">
+                <h4><i class="fa-solid fa-vials"></i> საჭირო რეაქტივები</h4>
+                <ul class="info-list" id="reagentsList"></ul>
+            </div>
+
+            <div class="card">
+                <h4><i class="fa-solid fa-microscope"></i> ლაბორატორიული დაკვირვება</h4>
+                <div class="observation-box" id="observationText"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Full Data for 10 Salt Synthesis Methods in Chemistry
+        const methodsData = [
+            {
+                id: 1,
+                name: "1. ლითონი + არალითონი",
+                shortName: "1. ლითონი + არალითონი",
+                type: "შეერთების რეაქცია",
+                eq: "2Na (მყ) + Cl₂ (აირ) → 2NaCl (მყ)",
+                reagents: ["ნატრიუმის ნაჭერი (Na)", "ქლორის აირი (Cl₂)"],
+                obs: "ნატრიუმის ნაჭერი იწვის ქლორის მოყვითალო-მწვანე აირში კაშკაშა ყვითელი ალით. წარმოიქმნება თეთრი კრისტალური ნივთიერება — სუფრის მარილი (NaCl).",
+                vessel: "jar",
+                liquidColor: "rgba(163, 230, 53, 0.25)",
+                targetLiquidColor: "rgba(255, 255, 255, 0.8)",
+                solidType: "sodium",
+                solidColor: "#cbd5e1",
+                hasGas: true,
+                gasColor: "rgba(163, 230, 53, 0.4)",
+                precipitate: true,
+                precipColor: "#ffffff",
+                needsHeat: false,
+                requiresHeatToReact: false
+            },
+            {
+                id: 2,
+                name: "2. ფუძე ოქსიდი + მჟავა ოქსიდი",
+                shortName: "2. ფუძე ოქსიდი + მჟავა ოქსიდი",
+                type: "შეერთების რეაქცია",
+                eq: "CaO (მყ) + CO₂ (აირ) → CaCO₃ (მყ)",
+                reagents: ["კალციუმის ოქსიდი / გამომწვარი კირი (CaO)", "ნახშირბადის დიოქსიდი (CO₂)"],
+                obs: "გამომწვარი კირის (CaO) თეთრი ფხვნილი შეხებისას CO₂ აირთან რეაგირებს და გარდაიქმნება კალციუმის კარბონატის (ცარცი/მარმარილო) თეთრ კრისტალებად.",
+                vessel: "beaker",
+                liquidColor: "transparent",
+                targetLiquidColor: "rgba(241, 245, 249, 0.9)",
+                solidType: "powder",
+                solidColor: "#e2e8f0",
+                hasGas: true,
+                gasColor: "rgba(255, 255, 255, 0.3)",
+                precipitate: true,
+                precipColor: "#f8fafc",
+                needsHeat: false,
+                requiresHeatToReact: false
+            },
+            {
+                id: 3,
+                name: "3. ფუძე ოქსიდი + მჟავა",
+                shortName: "3. ფუძე ოქსიდი + მჟავა",
+                type: "მიმოცვლის რეაქცია",
+                eq: "CuO (მყ) + H₂SO₄ (ხსნ) → CuSO₄ (ხსნ) + H₂O (თხ)",
+                reagents: ["სპილენძ(II)-ის ოქსიდი (CuO, შავი ფხვნილი)", "გოგირდმჟავა (H₂SO₄, უფერო)"],
+                obs: "შავი ფერის CuO-ს ფხვნილი მჟავაში ჩაყრისა და სპირტქურაზე გაცხელებისას იხსნება. ხსნარი იღებს მკვეთრ ცისფერ/ლურჯ შეფერილობას (სპილენძის შაბი - CuSO₄).",
+                vessel: "flask",
+                liquidColor: "rgba(224, 242, 254, 0.3)",
+                targetLiquidColor: "rgba(2, 132, 199, 0.85)",
+                solidType: "powder_black",
+                solidColor: "#0f172a",
+                hasGas: false,
+                precipitate: false,
+                needsHeat: true,
+                requiresHeatToReact: true
+            },
+            {
+                id: 4,
+                name: "4. მჟავა ოქსიდი + ტუტე",
+                shortName: "4. მჟავა ოქსიდი + ტუტე",
+                type: "მიმოცვლის რეაქცია",
+                eq: "CO₂ (აირ) + Ca(OH)₂ (ხსნ) → CaCO₃↓ + H₂O (თხ)",
+                reagents: ["ნახშირორჟანგი (CO₂)", "კირწყალი (Ca(OH)₂, გამჭვირვალე ხსნარი)"],
+                obs: "გამჭვირვალე კირწყალში ნახშირორჟანგის (CO₂) აირის გატარებისას ხსნარი იმღვრევა — წარმოიქმნება უხსნადი თეთრი ნალექი კალციუმის კარბონატი (CaCO₃↓).",
+                vessel: "flask",
+                liquidColor: "rgba(241, 245, 249, 0.25)",
+                targetLiquidColor: "rgba(241, 245, 249, 0.9)",
+                solidType: "none",
+                hasGas: true,
+                gasColor: "rgba(255, 255, 255, 0.5)",
+                precipitate: true,
+                precipColor: "#ffffff",
+                needsHeat: false,
+                requiresHeatToReact: false
+            },
+            {
+                id: 5,
+                name: "5. მჟავა + ტუტე (ნეიტრალიზაცია)",
+                shortName: "5. მჟავა + ტუტე (ნეიტრალიზაცია)",
+                type: "ნეიტრალიზაციის რეაქცია",
+                eq: "NaOH (ხსნ) + HCl (ხსნ) → NaCl (ხსნ) + H₂O (თხ)",
+                reagents: ["ნატრიუმის ტუტე (NaOH) + ფენოლფთალეინი", "მარილმჟავა (HCl)"],
+                obs: "ტუტე ხსნარს ფენოლფთალეინი აძლევს კაშკაშა ჟოლოსფერ შეფერილობას. მარილმჟავას დამატებისას ხსნარი მყისიერად უფერულდება, რაც ადასტურებს ნეიტრალიზაციასა და მარილის წარმოქმნას.",
+                vessel: "flask",
+                liquidColor: "rgba(225, 29, 72, 0.85)", // raspberry pink
+                targetLiquidColor: "rgba(241, 245, 249, 0.2)", // neutral clear
+                solidType: "none",
+                hasGas: false,
+                precipitate: false,
+                needsHeat: false,
+                requiresHeatToReact: false
+            },
+            {
+                id: 6,
+                name: "6. მჟავა + მარილი",
+                shortName: "6. მჟავა + მარილი",
+                type: "მიმოცვლის რეაქცია",
+                eq: "AgNO₃ (ხსნ) + HCl (ხსნ) → AgCl↓ (მყ) + HNO₃ (ხსნ)",
+                reagents: ["ვერცხლის ნიტრატი (AgNO₃, უფერო)", "მარილმჟავა (HCl, უფერო)"],
+                obs: "ორი გამჭვირვალე ხსნარის შერევისას მყისიერად წარმოიქმნება უხსნადი თეთრი ხაჭოსებრი ნალექი — ვერცხლის ქლორიდი (AgCl↓).",
+                vessel: "testtube",
+                liquidColor: "rgba(224, 242, 254, 0.3)",
+                targetLiquidColor: "rgba(224, 242, 254, 0.35)",
+                solidType: "none",
+                hasGas: false,
+                precipitate: true,
+                precipColor: "#ffffff",
+                curdy: true,
+                needsHeat: false,
+                requiresHeatToReact: false
+            },
+            {
+                id: 7,
+                name: "7. ტუტე + მარილი",
+                shortName: "7. ტუტე + მარილი",
+                type: "მიმოცვლის რეაქცია",
+                eq: "CuSO₄ (ხსნ) + 2NaOH (ხსნ) → Cu(OH)₂↓ (მყ) + Na₂SO₄ (ხსნ)",
+                reagents: ["სპილენძის სულფატი (CuSO₄, ცისფერი)", "ნატრიუმის ტუტე (NaOH, უფერო)"],
+                obs: "ცისფერ ხსნარში ტუტის დამატებისას წარმოიქმნება მკვეთრი ლურჯი ჟელესებრი (ლაბისებრი) ნალექი — სპილენძ(II)-ის ჰიდროქსიდი Cu(OH)₂↓ და მიიღება მარილი Na₂SO₄.",
+                vessel: "testtube",
+                liquidColor: "rgba(56, 189, 248, 0.6)",
+                targetLiquidColor: "rgba(14, 165, 233, 0.4)",
+                solidType: "none",
+                hasGas: false,
+                precipitate: true,
+                precipColor: "#0284c7",
+                curdy: true,
+                needsHeat: false,
+                requiresHeatToReact: false
+            },
+            {
+                id: 8,
+                name: "8. მარილი + მარილი",
+                shortName: "8. მარილი + მარილი",
+                type: "მიმოცვლის რეაქცია",
+                eq: "BaCl₂ (ხსნ) + Na₂SO₄ (ხსნ) → BaSO₄↓ (მყ) + 2NaCl (ხსნ)",
+                reagents: ["ბარიუმის ქლორიდი (BaCl₂)", "ნატრიუმის სულფატი (Na₂SO₄)"],
+                obs: "ორი უფერო მარილხსნარის შერევისას წარმოიქმნება მძიმე თეთრი წმინდაკრისტალური ნალექი — ბარიუმის სულფატი (BaSO₄↓), რომელიც მჟავებშიც კი უხსნადია.",
+                vessel: "beaker",
+                liquidColor: "rgba(224, 242, 254, 0.3)",
+                targetLiquidColor: "rgba(241, 245, 249, 0.35)",
+                solidType: "none",
+                hasGas: false,
+                precipitate: true,
+                precipColor: "#ffffff",
+                curdy: false,
+                needsHeat: false,
+                requiresHeatToReact: false
+            },
+            {
+                id: 9,
+                name: "9. ლითონი + მჟავა",
+                shortName: "9. ლითონი + მჟავა",
+                type: "ჩანაცვლების რეაქცია",
+                eq: "Zn (მყ) + 2HCl (ხსნ) → ZnCl₂ (ხსნ) + H₂↑ (აირ)",
+                reagents: ["თუთიის გრანულები (Zn)", "განზავებული მარილმჟავა (HCl)"],
+                obs: "თუთიის ნაცრისფერ გრანულებზე მჟავას დასხმისას იწყება ენერგიული რეაქცია: დიდი რაოდენობით გამოიყოფა უფერო, უსუნო აირის (წყალბადი H₂↑) ბუშტუკები და წარმოიქმნება თუთიის ქლორიდი.",
+                vessel: "testtube",
+                liquidColor: "rgba(224, 242, 254, 0.3)",
+                targetLiquidColor: "rgba(241, 245, 249, 0.35)",
+                solidType: "zinc",
+                solidColor: "#94a3b8",
+                hasGas: true,
+                gasColor: "rgba(255, 255, 255, 0.7)",
+                precipitate: false,
+                needsHeat: false,
+                requiresHeatToReact: false
+            },
+            {
+                id: 10,
+                name: "10. ლითონი + მარილი",
+                shortName: "10. ლითონი + მარილი",
+                type: "ჩანაცვლების რეაქცია",
+                eq: "Fe (მყ) + CuSO₄ (ხსნ) → FeSO₄ (ხსნ) + Cu↓ (მყ)",
+                reagents: ["რკინის ლურსმანი (Fe)", "სპილენძის სულფატი (CuSO₄, ცისფერი)"],
+                obs: "რკინის ლურსმნის ცისფერ CuSO₄ ხსნარში ჩაშვებისას, რკინის ზედაპირი მყისიერად იფარება წითელი ფერის სპილენძის (Cu) ნალექით, ხოლო ხსნარი ცისფერიდან ნელ-ნელა ღია მომწვანო ხდება (FeSO₄).",
+                vessel: "beaker",
+                liquidColor: "rgba(56, 189, 248, 0.75)",
+                targetLiquidColor: "rgba(110, 231, 183, 0.65)", // light green
+                solidType: "nail",
+                solidColor: "#64748b",
+                hasGas: false,
+                precipitate: true,
+                precipColor: "#b45309", // copper coating
+                needsHeat: false,
+                requiresHeatToReact: false
+            }
+        ];
+
+        let currentMethodIndex = 0;
+        let isReacting = false;
+        let reactionProgress = 0; // 0 to 1
+        let isHeating = false;
+        let particles = [];
+        let bubbles = [];
+        let precipitates = [];
+        let pourProgress = 0; // 0 to 1 for pouring animation
+
+        const canvas = document.getElementById('labCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Initialize UI list
+        function initMethodsList() {
+            const listEl = document.getElementById('methodsList');
+            listEl.innerHTML = '';
+            methodsData.forEach((m, idx) => {
+                const btn = document.createElement('button');
+                btn.className = `method-btn ${idx === currentMethodIndex ? 'active' : ''}`;
+                btn.onclick = () => selectMethod(idx);
+                btn.innerHTML = `<span class="num">${m.id}</span> <span>${m.name.replace(/^\d+\.\s*/, '')}</span>`;
+                listEl.appendChild(btn);
+            });
+            loadMethodDetails(currentMethodIndex);
+        }
+
+        function selectMethod(idx) {
+            currentMethodIndex = idx;
+            document.querySelectorAll('.method-btn').forEach((b, i) => {
+                b.classList.toggle('active', i === idx);
+            });
+            resetLab();
+            loadMethodDetails(idx);
+        }
+
+        function loadMethodDetails(idx) {
+            const m = methodsData[idx];
+            document.getElementById('methodTitle').innerText = m.name;
+            document.getElementById('reactionType').innerText = m.type;
+            document.getElementById('chemicalEquation').innerText = m.eq;
+            
+            const rList = document.getElementById('reagentsList');
+            rList.innerHTML = '';
+            m.reagents.forEach(r => {
+                const li = document.createElement('li');
+                li.innerHTML = r;
+                rList.appendChild(li);
+            });
+
+            document.getElementById('observationText').innerText = m.obs;
+
+            const heatBtn = document.getElementById('heatBtn');
+            if (m.needsHeat) {
+                heatBtn.style.display = 'flex';
+                heatBtn.title = "ამ რეაქციისთვის საჭიროა გაცხელება!";
+            } else {
+                heatBtn.style.display = 'flex';
+                heatBtn.title = "სურვილისამებრ ჩართეთ სპირტქურა";
+            }
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('toastMsg');
+            t.innerText = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2400);
+        }
+
+        function startReaction() {
+            const m = methodsData[currentMethodIndex];
+            if (m.requiresHeatToReact && !isHeating) {
+                showToast("⚠️ რეაქციისთვის ჩართეთ სპირტქურა (გაცხელება)!");
+                return;
+            }
+            if (!isReacting) {
+                isReacting = true;
+                pourProgress = 0;
+                showToast("⚗️ რეაქცია მიმდინარეობს...");
+                document.getElementById('statusOverlay').innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>მიმდინარეობს რეაქცია...</span>`;
+            }
+        }
+
+        function toggleHeat() {
+            isHeating = !isHeating;
+            const btn = document.getElementById('heatBtn');
+            if (isHeating) {
+                btn.classList.add('heating-active');
+                btn.innerHTML = `<i class="fa-solid fa-fire-flame-curved"></i> გაცხელება ჩართულია`;
+                showToast("🔥 სპირტქურა ანთებულია!");
+                const m = methodsData[currentMethodIndex];
+                if (m.requiresHeatToReact && !isReacting) {
+                    startReaction();
+                }
+            } else {
+                btn.classList.remove('heating-active');
+                btn.innerHTML = `<i class="fa-solid fa-fire"></i> გაცხელება (სპირტქურა)`;
+            }
+        }
+
+        function resetLab() {
+            isReacting = false;
+            reactionProgress = 0;
+            pourProgress = 0;
+            particles = [];
+            bubbles = [];
+            precipitates = [];
+            if (isHeating) toggleHeat();
+            document.getElementById('statusOverlay').innerHTML = `<i class="fa-solid fa-vial"></i> <span>მზადაა რეაქციისთვის</span>`;
+        }
+
+        // Color helper functions
+        function parseRgba(str) {
+            if (str === 'transparent') return [255, 255, 255, 0];
+            const m = str.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
+            if (!m) return [255, 255, 255, 0.5];
+            return [parseInt(m[1]), parseInt(m[2]), parseInt(m[3]), m[4] !== undefined ? parseFloat(m[4]) : 1];
+        }
+
+        function lerpColor(c1, c2, t) {
+            const r = Math.round(c1[0] + (c2[0] - c1[0]) * t);
+            const g = Math.round(c1[1] + (c2[1] - c1[1]) * t);
+            const b = Math.round(c1[2] + (c2[2] - c1[2]) * t);
+            const a = c1[3] + (c2[3] - c1[3]) * t;
+            return `rgba(${r}, ${g}, ${b}, ${a})`;
+        }
+
+        // Animation Loop
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const m = methodsData[currentMethodIndex];
+
+            // Progress state
+            if (isReacting && reactionProgress < 1) {
+                reactionProgress += 0.007;
+                if (reactionProgress >= 1) {
+                    reactionProgress = 1;
+                    document.getElementById('statusOverlay').innerHTML = `<i class="fa-solid fa-circle-check" style="color:#10b981;"></i> <span>რეაქცია დასრულდა! მარილი მიღებულია</span>`;
+                    showToast("✅ რეაქცია წარმატებით დასრულდა!");
+                }
+            }
+
+            if (isReacting && pourProgress < 1) {
+                pourProgress += 0.025;
+                if (pourProgress > 1) pourProgress = 1;
+            }
+
+            // Draw Laboratory Bench
+            drawLabBench();
+
+            // Draw Spirit Lamp / Burner
+            drawBurner(canvas.width / 2, 335, isHeating);
+
+            // Draw Vessel & Chemical Contents
+            drawVesselAndReaction(m);
+
+            requestAnimationFrame(animate);
+        }
+
+        function drawLabBench() {
+            // Lab bench surface
+            const grad = ctx.createLinearGradient(0, 340, 0, 420);
+            grad.addColorStop(0, '#1e293b');
+            grad.addColorStop(0.1, '#0f172a');
+            grad.addColorStop(1, '#020617');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 345, canvas.width, 75);
+
+            // Highlight line
+            ctx.strokeStyle = 'rgba(56, 189, 248, 0.2)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(0, 346);
+            ctx.lineTo(canvas.width, 346);
+            ctx.stroke();
+
+            // Tripod stand
+            ctx.strokeStyle = '#64748b';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            // Ring
+            ctx.moveTo(canvas.width / 2 - 50, 275);
+            ctx.lineTo(canvas.width / 2 + 50, 275);
+            // Legs
+            ctx.moveTo(canvas.width / 2 - 45, 275);
+            ctx.lineTo(canvas.width / 2 - 70, 350);
+            ctx.moveTo(canvas.width / 2 + 45, 275);
+            ctx.lineTo(canvas.width / 2 + 70, 350);
+            ctx.stroke();
+
+            // Wire gauze
+            ctx.strokeStyle = '#94a3b8';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(canvas.width / 2 - 45, 273);
+            ctx.lineTo(canvas.width / 2 + 45, 273);
+            ctx.stroke();
+        }
+
+        function drawBurner(x, y, active) {
+            // Lamp glass body
+            ctx.fillStyle = 'rgba(148, 163, 184, 0.25)';
+            ctx.strokeStyle = '#94a3b8';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.ellipse(x, y + 10, 30, 16, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            // Metallic cap
+            ctx.fillStyle = '#cbd5e1';
+            ctx.fillRect(x - 8, y - 8, 16, 10);
+
+            // Wick
+            ctx.fillStyle = '#f8fafc';
+            ctx.fillRect(x - 3, y - 14, 6, 8);
+
+            // Flame animation
+            if (active) {
+                const flicker = (Math.random() - 0.5) * 4;
+                const h = 28 + Math.random() * 8;
+
+                // Outer Orange Glow
+                ctx.save();
+                ctx.shadowColor = '#f59e0b';
+                ctx.shadowBlur = 20;
+
+                const flameGrad = ctx.createRadialGradient(x, y - 18, 2, x + flicker, y - 25, 25);
+                flameGrad.addColorStop(0, '#ffffff');
+                flameGrad.addColorStop(0.2, '#fef08a');
+                flameGrad.addColorStop(0.6, '#f97316');
+                flameGrad.addColorStop(1, 'rgba(239, 68, 68, 0)');
+
+                ctx.fillStyle = flameGrad;
+                ctx.beginPath();
+                ctx.moveTo(x - 10, y - 14);
+                ctx.quadraticCurveTo(x - 12 + flicker, y - 14 - h * 0.6, x + flicker, y - 14 - h);
+                ctx.quadraticCurveTo(x + 12 + flicker, y - 14 - h * 0.6, x + 10, y - 14);
+                ctx.closePath();
+                ctx.fill();
+
+                // Inner bright core
+                ctx.fillStyle = '#38bdf8';
+                ctx.beginPath();
+                ctx.moveTo(x - 4, y - 14);
+                ctx.quadraticCurveTo(x - 5, y - 22, x, y - 26);
+                ctx.quadraticCurveTo(x + 5, y - 22, x + 4, y - 14);
+                ctx.closePath();
+                ctx.fill();
+
+                ctx.restore();
+            }
+        }
+
+        function drawVesselAndReaction(m) {
+            const cx = canvas.width / 2;
+            const cy = 270;
+
+            const cStart = parseRgba(m.liquidColor);
+            const cEnd = parseRgba(m.targetLiquidColor);
+            const currentLiquidColor = lerpColor(cStart, cEnd, reactionProgress);
+
+            if (m.vessel === 'flask') {
+                drawFlask(cx, cy, currentLiquidColor, m);
+            } else if (m.vessel === 'testtube') {
+                drawTestTube(cx, cy, currentLiquidColor, m);
+            } else if (m.vessel === 'jar') {
+                drawGasJar(cx, cy, currentLiquidColor, m);
+            } else {
+                drawBeaker(cx, cy, currentLiquidColor, m);
+            }
+
+            // Draw pouring reagent animation when reaction starts
+            if (isReacting && pourProgress < 1) {
+                drawDropper(cx + 40, cy - 140, pourProgress);
+            }
+        }
+
+        function drawBeaker(cx, cy, liquidColor, m) {
+            const w = 110;
+            const h = 135;
+            const x = cx - w / 2;
+            const y = cy - h;
+
+            // Liquid Fill
+            if (liquidColor !== 'transparent') {
+                ctx.fillStyle = liquidColor;
+                ctx.beginPath();
+                ctx.roundRect(x + 4, cy - h * 0.55, w - 8, h * 0.55 - 4, [0, 0, 10, 10]);
+                ctx.fill();
+
+                // Meniscus / top surface
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
+                ctx.beginPath();
+                ctx.ellipse(cx, cy - h * 0.55, (w - 8) / 2, 6, 0, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Reactive Particles / Precipitates / Solids inside
+            handleReactionEffects(cx, cy - 20, w - 20, h * 0.45, m);
+
+            // Beaker Outline
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(x - 6, y); // spout
+            ctx.lineTo(x, y + 10);
+            ctx.lineTo(x, cy - 8);
+            ctx.quadraticCurveTo(x, cy, x + 10, cy);
+            ctx.lineTo(x + w - 10, cy);
+            ctx.quadraticCurveTo(x + w, cy, x + w, cy - 8);
+            ctx.lineTo(x + w, y);
+            ctx.stroke();
+
+            // Glass reflection highlight
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(x + 8, y + 20);
+            ctx.lineTo(x + 8, cy - 15);
+            ctx.stroke();
+
+            // Measurement marks
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+            ctx.lineWidth = 1.5;
+            for (let i = 1; i <= 3; i++) {
+                ctx.beginPath();
+                ctx.moveTo(x + 12, cy - i * 25);
+                ctx.lineTo(x + 24, cy - i * 25);
+                ctx.stroke();
+            }
+        }
+
+        function drawFlask(cx, cy, liquidColor, m) {
+            const h = 145;
+            const topY = cy - h;
+
+            // Liquid Fill
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(cx - 16, topY + 45);
+            ctx.lineTo(cx + 16, topY + 45);
+            ctx.lineTo(cx + 62, cy - 12);
+            ctx.quadraticCurveTo(cx + 66, cy, cx + 50, cy);
+            ctx.lineTo(cx - 50, cy);
+            ctx.quadraticCurveTo(cx - 66, cy, cx - 62, cy - 12);
+            ctx.closePath();
+            ctx.clip();
+
+            ctx.fillStyle = liquidColor;
+            ctx.fillRect(cx - 70, cy - 75, 140, 80);
+
+            // Liquid top surface
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
+            ctx.beginPath();
+            ctx.ellipse(cx, cy - 70, 40, 7, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Reactions inside
+            handleReactionEffects(cx, cy - 15, 80, 55, m);
+            ctx.restore();
+
+            // Glass Flask Outline
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.65)';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            // Rim
+            ctx.ellipse(cx, topY, 16, 4, 0, 0, Math.PI * 2);
+            // Neck & Body
+            ctx.moveTo(cx - 15, topY);
+            ctx.lineTo(cx - 15, topY + 45);
+            ctx.lineTo(cx - 62, cy - 10);
+            ctx.quadraticCurveTo(cx - 65, cy, cx - 50, cy);
+            ctx.lineTo(cx + 50, cy);
+            ctx.quadraticCurveTo(cx + 65, cy, cx + 62, cy - 10);
+            ctx.lineTo(cx + 15, topY + 45);
+            ctx.lineTo(cx + 15, topY);
+            ctx.stroke();
+
+            // Highlight line
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(cx - 52, cy - 15);
+            ctx.lineTo(cx - 20, topY + 50);
+            ctx.stroke();
+        }
+
+        function drawTestTube(cx, cy, liquidColor, m) {
+            const w = 44;
+            const h = 150;
+            const x = cx - w / 2;
+            const topY = cy - h;
+
+            // Liquid inside
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(x + 3, topY + 30);
+            ctx.lineTo(x + w - 3, topY + 30);
+            ctx.lineTo(x + w - 3, cy - w / 2);
+            ctx.arc(cx, cy - w / 2, (w - 6) / 2, 0, Math.PI);
+            ctx.closePath();
+            ctx.clip();
+
+            ctx.fillStyle = liquidColor;
+            ctx.fillRect(x, cy - 85, w, 90);
+
+            // Liquid surface
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.beginPath();
+            ctx.ellipse(cx, cy - 82, (w - 6) / 2, 4, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            handleReactionEffects(cx, cy - 15, w - 8, 70, m);
+            ctx.restore();
+
+            // Test tube glass outline
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.65)';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            // Lip
+            ctx.ellipse(cx, topY, w / 2 + 4, 4, 0, 0, Math.PI * 2);
+            ctx.moveTo(x, topY);
+            ctx.lineTo(x, cy - w / 2);
+            ctx.arc(cx, cy - w / 2, w / 2, 0, Math.PI);
+            ctx.lineTo(x + w, topY);
+            ctx.stroke();
+
+            // Reflection
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            ctx.moveTo(x + 5, topY + 15);
+            ctx.lineTo(x + 5, cy - 25);
+            ctx.stroke();
+        }
+
+        function drawGasJar(cx, cy, liquidColor, m) {
+            const w = 120;
+            const h = 160;
+            const x = cx - w / 2;
+            const y = cy - h;
+
+            // Gas color inside
+            const gasGrad = ctx.createLinearGradient(0, y, 0, cy);
+            gasGrad.addColorStop(0, m.gasColor || 'rgba(163, 230, 53, 0.3)');
+            gasGrad.addColorStop(1, 'rgba(163, 230, 53, 0.15)');
+            ctx.fillStyle = gasGrad;
+            ctx.fillRect(x + 4, y + 10, w - 8, h - 14);
+
+            handleReactionEffects(cx, cy - 20, w - 20, h * 0.7, m);
+
+            // Gas jar glass container
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.65)';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            // Lid
+            ctx.strokeRect(x - 8, y, w + 16, 10);
+            ctx.moveTo(x, y + 10);
+            ctx.lineTo(x, cy - 6);
+            ctx.quadraticCurveTo(x, cy, x + 8, cy);
+            ctx.lineTo(x + w - 8, cy);
+            ctx.quadraticCurveTo(x + w, cy, x + w, cy - 6);
+            ctx.lineTo(x + w, y + 10);
+            ctx.stroke();
+        }
+
+        function handleReactionEffects(cx, bottomY, width, height, m) {
+            // Draw initial solids
+            if (m.solidType === 'powder_black') {
+                // CuO black powder at bottom (dissolves as reaction completes)
+                const opacity = Math.max(0, 1 - reactionProgress * 1.1);
+                if (opacity > 0) {
+                    ctx.fillStyle = `rgba(15, 23, 42, ${opacity})`;
+                    ctx.beginPath();
+                    ctx.ellipse(cx, bottomY, width * 0.35, 8, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            } else if (m.solidType === 'powder') {
+                // White powder
+                ctx.fillStyle = '#f8fafc';
+                ctx.beginPath();
+                ctx.ellipse(cx, bottomY, width * 0.35, 7, 0, 0, Math.PI * 2);
+                ctx.fill();
+            } else if (m.solidType === 'zinc') {
+                // Zinc granules
+                ctx.fillStyle = '#64748b';
+                for (let i = -2; i <= 2; i++) {
+                    ctx.beginPath();
+                    ctx.arc(cx + i * 8, bottomY - 4 + (i % 2) * 3, 5, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            } else if (m.solidType === 'sodium') {
+                // Sodium cube burning
+                const cubeY = bottomY - 30;
+                ctx.fillStyle = '#e2e8f0';
+                ctx.fillRect(cx - 8, cubeY, 16, 16);
+
+                if (isReacting) {
+                    // Bright combustion flare
+                    ctx.save();
+                    ctx.shadowColor = '#facc15';
+                    ctx.shadowBlur = 25;
+                    ctx.fillStyle = 'rgba(254, 240, 138, 0.85)';
+                    ctx.beginPath();
+                    ctx.arc(cx, cubeY + 8, 14 + Math.random() * 8, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                }
+            } else if (m.solidType === 'nail') {
+                // Iron Nail dipping in solution
+                const nailGrad = ctx.createLinearGradient(cx - 6, bottomY - 70, cx + 6, bottomY);
+                // Nail turns copper-colored as reaction progresses
+                if (reactionProgress > 0.05) {
+                    nailGrad.addColorStop(0, '#64748b');
+                    nailGrad.addColorStop(0.3, '#b45309');
+                    nailGrad.addColorStop(1, '#d97706'); // Copper color
+                } else {
+                    nailGrad.addColorStop(0, '#94a3b8');
+                    nailGrad.addColorStop(1, '#475569');
+                }
+                ctx.fillStyle = nailGrad;
+                ctx.beginPath();
+                ctx.moveTo(cx - 5, bottomY - 70);
+                ctx.lineTo(cx + 5, bottomY - 70);
+                ctx.lineTo(cx + 3, bottomY);
+                ctx.lineTo(cx, bottomY + 6);
+                ctx.lineTo(cx - 3, bottomY);
+                ctx.closePath();
+                ctx.fill();
+                ctx.strokeStyle = '#334155';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            }
+
+            // Gas Bubbles animation
+            if (isReacting && (m.hasGas || m.solidType === 'zinc')) {
+                if (Math.random() < 0.4) {
+                    bubbles.push({
+                        x: cx + (Math.random() - 0.5) * width * 0.7,
+                        y: bottomY,
+                        r: 2 + Math.random() * 3.5,
+                        speed: 1.5 + Math.random() * 2
+                    });
+                }
+            }
+
+            // Render and update bubbles
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+            for (let i = bubbles.length - 1; i >= 0; i--) {
+                const b = bubbles[i];
+                b.y -= b.speed;
+                b.x += (Math.random() - 0.5) * 0.8;
+                ctx.beginPath();
+                ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+                ctx.fill();
+                if (b.y < bottomY - height) {
+                    bubbles.splice(i, 1);
+                }
+            }
+
+            // Precipitate (Flakes / Sediment)
+            if (isReacting && m.precipitate && reactionProgress > 0.15) {
+                if (precipitates.length < 60 && Math.random() < 0.6) {
+                    precipitates.push({
+                        x: cx + (Math.random() - 0.5) * width * 0.7,
+                        y: bottomY - height * 0.6 + Math.random() * 15,
+                        targetY: bottomY - 2 - Math.random() * 10,
+                        r: m.curdy ? (3 + Math.random() * 3) : (1.5 + Math.random() * 2),
+                        speed: 0.8 + Math.random() * 1.2
+                    });
+                }
+
+                ctx.fillStyle = m.precipColor || '#ffffff';
+                for (let i = 0; i < precipitates.length; i++) {
+                    const p = precipitates[i];
+                    if (p.y < p.targetY) {
+                        p.y += p.speed;
+                    }
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                // Sediment layer at bottom
+                const sedHeight = Math.min(12, reactionProgress * 12);
+                ctx.fillStyle = m.precipColor || '#ffffff';
+                ctx.beginPath();
+                ctx.ellipse(cx, bottomY, width * 0.38, sedHeight / 2, 0, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function drawDropper(x, y, progress) {
+            // Pipette / Dropper tilted adding drops
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(-0.35);
+
+            // Dropper glass body
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+            ctx.strokeStyle = '#e2e8f0';
+            ctx.lineWidth = 2;
+            ctx.fillRect(-6, -40, 12, 50);
+            ctx.strokeRect(-6, -40, 12, 50);
+
+            // Rubber bulb
+            ctx.fillStyle = '#ef4444';
+            ctx.beginPath();
+            ctx.arc(0, -45, 10, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Tip
+            ctx.beginPath();
+            ctx.moveTo(-6, 10);
+            ctx.lineTo(-2, 25);
+            ctx.lineTo(2, 25);
+            ctx.lineTo(6, 10);
+            ctx.closePath();
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+            ctx.fill();
+            ctx.stroke();
+
+            // Liquid inside dropper
+            ctx.fillStyle = '#38bdf8';
+            ctx.fillRect(-4, -10, 8, 25);
+
+            ctx.restore();
+
+            // Falling drops
+            const dropY = y + 25 + (progress * 70) % 70;
+            ctx.fillStyle = '#38bdf8';
+            ctx.beginPath();
+            ctx.arc(x - 5, dropY, 3, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // Initialize application on load
+        window.addEventListener('DOMContentLoaded', () => {
+            initMethodsList();
+            animate();
+        });
+    </script>
+</body>
+</html>
